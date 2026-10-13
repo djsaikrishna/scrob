@@ -43,6 +43,9 @@ COPY --from=frontend-builder /app/frontend/dist ./dist
 COPY --from=frontend-builder /app/frontend/node_modules ./node_modules
 COPY --from=frontend-builder /app/frontend/package.json ./
 
+# ── Ensure persistent runtime directories exist ──────────────────────────────
+RUN mkdir -p /app/backend/data /app/backend/data/logs
+
 # ── Entrypoint & supervisor config ────────────────────────────────────────────
 COPY entrypoint.sh /entrypoint.sh
 COPY supervisord.conf /etc/supervisor/conf.d/scrob.conf
@@ -50,7 +53,6 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 7330
 
-# Requires Docker Engine 25+ for --start-interval
 HEALTHCHECK --interval=2m --timeout=2s --start-period=20s --start-interval=5s --retries=3 \
   CMD curl -fsS http://127.0.0.1:${BACKEND_PORT:-7331}/health || exit 1
 
